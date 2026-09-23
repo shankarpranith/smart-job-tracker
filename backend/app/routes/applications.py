@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.models.application import Application, ApplicationCreate
 
@@ -28,3 +28,21 @@ def create_application(payload: ApplicationCreate) -> Application:
     )
     fake_db.append(new_application)
     return new_application
+
+
+@router.get("", response_model=list[Application])
+def list_applications() -> list[Application]:
+    """Return all job applications (for the current demo user)."""
+    return [app for app in fake_db if app.user_id == TEMP_USER_ID]
+
+
+@router.get("/{application_id}", response_model=Application)
+def get_application(application_id: str) -> Application:
+    """Return a single job application by its ID."""
+    for app in fake_db:
+        if app.application_id == application_id and app.user_id == TEMP_USER_ID:
+            return app
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Application with id '{application_id}' not found",
+    )
