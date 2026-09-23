@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (for later frontend phase)
+node_modules/
+build/
+dist/
+
+# Terraform (for later)
+*.tfstate
+*.tfstate.backup
+.terraform/
