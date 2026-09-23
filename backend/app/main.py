@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
+from app.routes import applications
+
 app = FastAPI(title="Smart Job Application Tracker")
+
+app.include_router(applications.router)
 
 
 @app.get("/")
