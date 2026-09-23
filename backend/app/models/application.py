@@ -36,3 +36,17 @@ class Application(ApplicationCreate):
     user_id: str
     created_at: datetime
     updated_at: datetime
+    
+class ApplicationUpdate(BaseModel):
+    """Fields the client can send to update an existing application.
+    All fields are optional — the client only sends what changed."""
+    company: Optional[str] = Field(None, min_length=1, max_length=200)
+    job_title: Optional[str] = Field(None, min_length=1, max_length=200)
+    job_url: Optional[str] = None
+    location: Optional[str] = None
+    salary: Optional[str] = None
+    status: Optional[ApplicationStatus] = None
+    applied_date: Optional[date] = None
+    follow_up_date: Optional[date] = None
+    job_description: Optional[str] = None
+    notes: Optional[str] = None

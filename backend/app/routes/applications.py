@@ -3,15 +3,11 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.models.application import Application, ApplicationCreate
+from app.models.application import Application, ApplicationCreate, ApplicationUpdate
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
-# Temporary in-memory storage.
-# NOTE: This resets every time the server restarts. Replaced by DynamoDB in Phase 3.
 fake_db: list[Application] = []
-
-# Hardcoded for now — real user_id will come from Cognito auth in Phase 6.
 TEMP_USER_ID = "demo-user-1"
 
 
@@ -42,6 +38,36 @@ def get_application(application_id: str) -> Application:
     for app in fake_db:
         if app.application_id == application_id and app.user_id == TEMP_USER_ID:
             return app
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Application with id '{application_id}' not found",
+    )
+
+
+@router.put("/{application_id}", response_model=Application)
+def update_application(application_id: str, payload: ApplicationUpdate) -> Application:
+    """Update fields on an existing application. Only provided fields are changed."""
+    for index, app in enumerate(fake_db):
+        if app.application_id == application_id and app.user_id == TEMP_USER_ID:
+            # Only overwrite fields the client actually sent (exclude_unset=True)
+            update_data = payload.model_dump(exclude_unset=True)
+            updated_app = app.model_copy(update=update_data)
+            updated_app.updated_at = datetime.now(timezone.utc)
+            fake_db[index] = updated_app
+            return updated_app
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Application with id '{application_id}' not found",
+    )
+
+
+@router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_application(application_id: str) -> None:
+    """Delete an application by its ID."""
+    for index, app in enumerate(fake_db):
+        if app.application_id == application_id and app.user_id == TEMP_USER_ID:
+            fake_db.pop(index)
+            return
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Application with id '{application_id}' not found",
