@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Smart Job Application Tracker - Lambda function
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  JobTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: app.main.handler
+      Runtime: python3.12
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: JobApplications
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY

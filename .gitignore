@@ -21,3 +21,6 @@ dist/
 *.tfstate
 *.tfstate.backup
 .terraform/
+
+# SAM
+.aws-sam/

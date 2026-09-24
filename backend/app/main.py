@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from mangum import Mangum
 
 from app.routes import applications
 
@@ -17,3 +18,9 @@ def read_root():
 def health_check():
     """Used later by monitoring tools to verify the API is alive."""
     return {"status": "ok"}
+
+
+# This is the entry point AWS Lambda calls.
+# Mangum wraps our FastAPI ASGI app so Lambda's event/context format
+# gets translated into a normal HTTP request FastAPI understands.
+handler = Mangum(app)
