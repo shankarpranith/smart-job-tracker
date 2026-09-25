@@ -4,10 +4,25 @@ Description: Smart Job Application Tracker - Lambda function
 
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 15
     MemorySize: 256
 
+Parameters:
+  CognitoUserPoolId:
+    Type: String
+    Description: The Cognito User Pool ID used to authorize API requests
+
 Resources:
+  JobTrackerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
   JobTrackerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -21,5 +36,19 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
+            RestApiId: !Ref JobTrackerApi
             Path: /{proxy+}
             Method: ANY
+        HealthCheckEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref JobTrackerApi
+            Path: /health
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${JobTrackerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

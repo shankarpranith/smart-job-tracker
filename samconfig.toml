@@ -4,6 +4,7 @@ version = 0.1
 stack_name = "smart-job-tracker"
 resolve_s3 = true
 s3_prefix = "smart-job-tracker"
+parameter_overrides = "CognitoUserPoolId=us-east-1_dPowTiOVG"
 region = "us-east-1"
 profile = "job-tracker"
 confirm_changeset = true
