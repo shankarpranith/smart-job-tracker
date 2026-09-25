@@ -74,13 +74,19 @@ def delete_application(
     application_id: str,
     user_id: str = Depends(get_current_user_id),
 ) -> None:
-    """Delete an application belonging to the authenticated user."""
-    deleted = repo.delete_item(user_id, application_id)
-    if not deleted:
+    """Delete an application belonging to the authenticated user,
+    including its resume file in S3, if one was uploaded."""
+    app = repo.get_item(user_id, application_id)
+    if app is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Application with id '{application_id}' not found",
         )
+
+    if app.resume_s3_key is not None:
+        s3_service.delete_resume(app.resume_s3_key)
+
+    repo.delete_item(user_id, application_id)
         
 class ResumeUploadRequest(BaseModel):
     content_type: str
