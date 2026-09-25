@@ -32,6 +32,7 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_TABLE_NAME: JobApplications
+          S3_RESUME_BUCKET_NAME: smart-job-tracker-resumes-shankar2026
       Events:
         ApiEvent:
           Type: Api
