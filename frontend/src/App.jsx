@@ -1,20 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider, useAuth } from './auth/AuthContext';
+import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './auth/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import Dashboard from './pages/Dashboard';
+import ApplicationForm from './pages/ApplicationForm';
+import ApplicationDetail from './pages/ApplicationDetail';
 import './App.css';
-
-function DashboardPlaceholder() {
-  const { currentUser, logout } = useAuth();
-  return (
-    <div>
-      <h1>Smart Job Application Tracker</h1>
-      <p>Logged in as: {currentUser.email}</p>
-      <button onClick={logout}>Log Out</button>
-    </div>
-  );
-}
 
 function AppRoutes() {
   return (
@@ -25,7 +17,31 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <DashboardPlaceholder />
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications/new"
+        element={
+          <ProtectedRoute>
+            <ApplicationForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications/:id"
+        element={
+          <ProtectedRoute>
+            <ApplicationDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications/:id/edit"
+        element={
+          <ProtectedRoute>
+            <ApplicationForm />
           </ProtectedRoute>
         }
       />

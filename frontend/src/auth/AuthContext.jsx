@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { setTokenProvider } from '../api/client';
 import {
   CognitoUser,
   AuthenticationDetails,
@@ -9,6 +10,7 @@ import { userPool } from './cognitoConfig';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  setTokenProvider(getValidIdToken);
   const [currentUser, setCurrentUser] = useState(null);
   const [idToken, setIdToken] = useState(null);
   const [loading, setLoading] = useState(true);
