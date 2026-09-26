@@ -83,3 +83,14 @@ def delete_item(user_id: str, application_id: str) -> bool:
         return False
     _table.delete_item(Key={"user_id": user_id, "application_id": application_id})
     return True
+
+def find_by_follow_up_date(follow_up_date: str) -> list[Application]:
+    """Query ALL applications (across all users) with this exact follow_up_date,
+    using the FollowUpDateIndex GSI. Used by the scheduled reminder job —
+    not exposed via any API route, since it deliberately bypasses user isolation."""
+    response = _table.query(
+        IndexName="FollowUpDateIndex",
+        KeyConditionExpression=boto3.dynamodb.conditions.Key("follow_up_date").eq(follow_up_date),
+    )
+    items = response.get("Items", [])
+    return [Application(**item) for item in items]
