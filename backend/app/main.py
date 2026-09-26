@@ -1,9 +1,18 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 from app.routes import applications
 
 app = FastAPI(title="Smart Job Application Tracker")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(applications.router)
 
@@ -20,7 +29,4 @@ def health_check():
     return {"status": "ok"}
 
 
-# This is the entry point AWS Lambda calls.
-# Mangum wraps our FastAPI ASGI app so Lambda's event/context format
-# gets translated into a normal HTTP request FastAPI understands.
 handler = Mangum(app)

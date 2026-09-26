@@ -24,3 +24,8 @@ dist/
 
 # SAM
 .aws-sam/
+
+# Frontend
+frontend/.env
+frontend/node_modules/
+frontend/dist/

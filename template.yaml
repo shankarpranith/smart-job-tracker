@@ -17,6 +17,10 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
         Authorizers:
@@ -53,3 +57,4 @@ Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${JobTrackerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+
