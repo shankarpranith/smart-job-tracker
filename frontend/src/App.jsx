@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ApplicationForm from './pages/ApplicationForm';
 import ApplicationDetail from './pages/ApplicationDetail';
 import './App.css';
+import Analytics from './pages/Analytics';
 
 function AppRoutes() {
   return (
@@ -34,6 +35,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ApplicationDetail />
+          </ProtectedRoute>
+        }
+      />
+            <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <Analytics />
           </ProtectedRoute>
         }
       />

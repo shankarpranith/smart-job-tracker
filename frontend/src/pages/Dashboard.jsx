@@ -48,6 +48,8 @@ export default function Dashboard() {
 
       <div className="dashboard-actions">
         <Link to="/applications/new">+ Add Application</Link>
+        {' | '}
+        <Link to="/analytics">View Analytics</Link>
       </div>
 
       {loading && <p>Loading applications...</p>}

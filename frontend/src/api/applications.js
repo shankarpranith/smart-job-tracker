@@ -35,3 +35,8 @@ export async function getResumeDownloadUrl(id) {
   const res = await apiClient.get(`/applications/${id}/resume-download-url`);
   return res.data; // { download_url }
 }
+
+export async function getStats() {
+  const res = await apiClient.get('/applications/stats');
+  return res.data;
+}
