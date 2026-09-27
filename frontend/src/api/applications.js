@@ -40,3 +40,17 @@ export async function getStats() {
   const res = await apiClient.get('/applications/stats');
   return res.data;
 }
+
+export async function analyzeJobDescription(jobDescription) {
+  const res = await apiClient.post('/applications/analyze-job-description', {
+    job_description: jobDescription,
+  });
+  return res.data;
+}
+
+export async function matchResume(applicationId, resumeText) {
+  const res = await apiClient.post(`/applications/${applicationId}/match-resume`, {
+    resume_text: resumeText,
+  });
+  return res.data;
+}

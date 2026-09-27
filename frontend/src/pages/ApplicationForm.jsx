@@ -4,6 +4,7 @@ import {
   createApplication,
   updateApplication,
   getApplication,
+  analyzeJobDescription,
 } from '../api/applications';
 
 const STATUS_OPTIONS = [
@@ -39,6 +40,9 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisError, setAnalysisError] = useState('');
 
   useEffect(() => {
     if (!isEditing) return;
@@ -66,12 +70,30 @@ export default function ApplicationForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  async function handleAnalyze() {
+    if (!form.job_description.trim()) {
+      setAnalysisError('Paste a job description first.');
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysisError('');
+    setAnalysis(null);
+    try {
+      const result = await analyzeJobDescription(form.job_description);
+      setAnalysis(result);
+    } catch (err) {
+      setAnalysisError('AI analysis failed. Please try again.');
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setError('');
 
-    // Don't send empty strings for optional date fields —
+    // Don't send empty strings for optional date fields -
     // the backend expects either a valid date or the field omitted.
     const payload = { ...form };
     if (!payload.applied_date) delete payload.applied_date;
@@ -152,6 +174,23 @@ export default function ApplicationForm() {
             rows={4}
           />
         </label>
+        <div className="ai-section">
+          <button type="button" onClick={handleAnalyze} disabled={analyzing}>
+            {analyzing ? 'Analyzing...' : 'Analyze with AI'}
+          </button>
+          {analysisError && <p className="error">{analysisError}</p>}
+          {analysis && (
+            <div className="ai-result">
+              <h3>Experience Level: {analysis.experience_level}</h3>
+              <p><strong>Required Skills:</strong></p>
+              <ul>{analysis.required_skills?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              <p><strong>Preferred Skills:</strong></p>
+              <ul>{analysis.preferred_skills?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              <p><strong>Key Responsibilities:</strong></p>
+              <ul>{analysis.responsibilities?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            </div>
+          )}
+        </div>
         <label>
           Notes
           <textarea name="notes" value={form.notes} onChange={handleChange} rows={3} />

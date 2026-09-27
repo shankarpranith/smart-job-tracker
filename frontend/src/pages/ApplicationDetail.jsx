@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getApplication, getResumeUploadUrl, getResumeDownloadUrl } from '../api/applications';
+import { getApplication, getResumeUploadUrl, getResumeDownloadUrl, matchResume } from '../api/applications';
 import { uploadFileToS3 } from '../api/client';
 
 const ALLOWED_TYPES = [
@@ -15,6 +15,10 @@ export default function ApplicationDetail() {
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [resumeText, setResumeText] = useState('');
+  const [matching, setMatching] = useState(false);
+  const [matchResult, setMatchResult] = useState(null);
+  const [matchError, setMatchError] = useState('');
 
   function loadApplication() {
     return getApplication(id)
@@ -55,6 +59,24 @@ export default function ApplicationDetail() {
       window.open(download_url, '_blank');
     } catch (err) {
       alert('Failed to get download link');
+    }
+  }
+
+  async function handleMatch() {
+    if (!resumeText.trim()) {
+      setMatchError('Paste your resume text first.');
+      return;
+    }
+    setMatching(true);
+    setMatchError('');
+    setMatchResult(null);
+    try {
+      const result = await matchResume(id, resumeText);
+      setMatchResult(result);
+    } catch (err) {
+      setMatchError('AI matching failed. Make sure this application has a job description saved.');
+    } finally {
+      setMatching(false);
     }
   }
 
@@ -100,6 +122,34 @@ export default function ApplicationDetail() {
         </label>
         {uploading && <p>Uploading...</p>}
         {uploadError && <p className="error">{uploadError}</p>}
+      </section>
+
+      <section className="ai-section">
+        <h2>Match My Resume</h2>
+        <p>Paste your resume text to see how well it matches this job.</p>
+        <textarea
+          rows={6}
+          value={resumeText}
+          onChange={(e) => setResumeText(e.target.value)}
+          placeholder="Paste your resume text here..."
+        />
+        <button onClick={handleMatch} disabled={matching}>
+          {matching ? 'Matching...' : 'Match My Resume'}
+        </button>
+        {matchError && <p className="error">{matchError}</p>}
+        {matchResult && (
+          <div className="ai-result">
+            <p className="match-percentage">{matchResult.match_percentage}% Match</p>
+            <p><strong>Matching Skills:</strong></p>
+            <ul>{matchResult.matching_skills?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            <p><strong>Missing Skills:</strong></p>
+            <ul>{matchResult.missing_skills?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            <p><strong>Strengths:</strong></p>
+            <ul>{matchResult.strengths?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            <p><strong>Recommendations:</strong></p>
+            <ul>{matchResult.recommendations?.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          </div>
+        )}
       </section>
 
       <Link to={`/applications/${id}/edit`}>Edit</Link>
