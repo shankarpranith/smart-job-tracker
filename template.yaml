@@ -43,6 +43,10 @@ Resources:
           S3_RESUME_BUCKET_NAME: smart-job-tracker-resumes-shankar2026
           BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
       Policies:
+        - DynamoDBCrudPolicy:
+            TableName: JobApplications
+        - S3CrudPolicy:
+            BucketName: smart-job-tracker-resumes-shankar2026
         - Statement:
             - Effect: Allow
               Action:
