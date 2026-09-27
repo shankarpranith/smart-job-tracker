@@ -41,6 +41,13 @@ Resources:
         Variables:
           DYNAMODB_TABLE_NAME: JobApplications
           S3_RESUME_BUCKET_NAME: smart-job-tracker-resumes-shankar2026
+          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-*"
       Events:
         ApiEvent:
           Type: Api

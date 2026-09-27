@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-
+from app.services import ai_service
 from app.models.application import Application, ApplicationCreate, ApplicationUpdate
 from app.repositories import application_repository as repo
 from app.utils.auth import get_current_user_id
@@ -127,7 +127,42 @@ def get_resume_upload_url(
 
     return ResumeUploadResponse(**result)
 
+class ResumeMatchRequest(BaseModel):
+    resume_text: str
 
+
+@router.post("/{application_id}/match-resume")
+def match_resume_route(
+    application_id: str,
+    payload: ResumeMatchRequest,
+    user_id: str = Depends(get_current_user_id),
+) -> dict:
+    """Compare the user's pasted resume text against this application's
+    stored job description, using AI."""
+    app = repo.get_item(user_id, application_id)
+    if app is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application with id '{application_id}' not found",
+        )
+    if not app.job_description or not app.job_description.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This application has no job description saved to match against",
+        )
+    if not payload.resume_text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="resume_text cannot be empty",
+        )
+
+    try:
+        return ai_service.match_resume_to_job(payload.resume_text, app.job_description)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI matching failed: {str(e)}",
+        )
 @router.get("/{application_id}/resume-download-url")
 def get_resume_download_url(
     application_id: str,
@@ -148,3 +183,28 @@ def get_resume_download_url(
 
     download_url = s3_service.generate_download_url(app.resume_s3_key)
     return {"download_url": download_url}
+
+class JobDescriptionAnalysisRequest(BaseModel):
+    job_description: str
+
+
+@router.post("/analyze-job-description")
+def analyze_job_description_route(
+    payload: JobDescriptionAnalysisRequest,
+    user_id: str = Depends(get_current_user_id),
+) -> dict:
+    """Analyze a job description using AI, extracting key structured info.
+    Does not require an existing application — can be used before creating one,
+    e.g. when the user is deciding whether to apply."""
+    if not payload.job_description.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="job_description cannot be empty",
+        )
+    try:
+        return ai_service.analyze_job_description(payload.job_description)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI analysis failed: {str(e)}",
+        )
