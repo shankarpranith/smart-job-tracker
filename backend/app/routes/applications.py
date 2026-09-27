@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.models.application import Application, ApplicationCreate, ApplicationUpdate
 from app.repositories import application_repository as repo
 from app.utils.auth import get_current_user_id
-
+from app.models.application import Application, ApplicationCreate, ApplicationUpdate, ApplicationStats
 from pydantic import BaseModel
 
 from app.services import s3_service
-
+from app.services import stats_service
 router = APIRouter(prefix="/applications", tags=["applications"])
 
 
@@ -36,6 +36,11 @@ def list_applications(user_id: str = Depends(get_current_user_id)) -> list[Appli
     """Return all job applications for the authenticated user."""
     return repo.list_items(user_id)
 
+@router.get("/stats", response_model=ApplicationStats)
+def get_application_stats(user_id: str = Depends(get_current_user_id)) -> ApplicationStats:
+    """Return aggregate statistics about the authenticated user's applications."""
+    applications = repo.list_items(user_id)
+    return stats_service.compute_stats(applications)
 
 @router.get("/{application_id}", response_model=Application)
 def get_application(

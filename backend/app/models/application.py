@@ -53,3 +53,24 @@ class ApplicationUpdate(BaseModel):
     job_description: Optional[str] = None
     notes: Optional[str] = None
     resume_s3_key: Optional[str] = None
+    
+class StatusBreakdown(BaseModel):
+    status: str
+    count: int
+
+
+class MonthlyCount(BaseModel):
+    month: str  # "2026-09"
+    count: int
+
+
+class ApplicationStats(BaseModel):
+    total_applications: int
+    status_breakdown: list[StatusBreakdown]
+    interviews: int
+    offers: int
+    rejections: int
+    response_rate: float   # % of applications that got PAST "Applied" (any response)
+    interview_rate: float  # % of applications that reached Interview or beyond
+    offer_rate: float      # % of applications that resulted in an Offer or Accepted
+    applications_over_time: list[MonthlyCount]
